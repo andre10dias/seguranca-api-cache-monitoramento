@@ -1,7 +1,7 @@
 package br.com.alura.forum.repository;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import br.com.alura.forum.modelo.Topico;
@@ -14,8 +14,9 @@ import br.com.alura.forum.modelo.Topico;
  * 	ela vai trabalhar e o tipo de dado do atributo id desta entidade 
  * */
 public interface TopicoRepository extends JpaRepository<Topico, Long> {
-
-	List<Topico> findByCursoNome(String nomeCurso);
+	
+	//Paginação
+	Page<Topico> findByCursoNome(String nomeCurso, Pageable paginacao);
 	
 	//@Query("SELECT t FROM Topico t WHERE t.curso.nome = :nomeCurso")
 	//List<Topico> carregaPorNomeDoCurso(@Param("nomeCurso") String nomeCurso);
