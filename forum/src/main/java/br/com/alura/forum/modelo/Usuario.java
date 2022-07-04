@@ -89,7 +89,7 @@ public class Usuario implements UserDetails {
 	}
 	
 	// Métodos do UserDetails ------------------------------------------
-	
+
 	@Override  //Guarda uma coleção com os perfis do usuário
 	public Collection<? extends GrantedAuthority> getAuthorities() { 
 		// TODO Auto-generated method stub

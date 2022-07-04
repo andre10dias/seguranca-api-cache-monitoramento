@@ -15,6 +15,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import br.com.alura.forum.repository.UsuarioRepository;
+
 @EnableWebSecurity
 @Configuration
 public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
@@ -24,6 +26,9 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 	
 	@Autowired
 	private TokenService tokenService;
+	
+	@Autowired
+	private UsuarioRepository usuarioRepository;
 	
 	/*
 	 * Método para realizar a injeção de dependência do 'AuthenticatedAuthorizationManager'
@@ -55,7 +60,7 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 			.sessionManagement() //alterando a politica de sessão para STATELESS para utilização de token
 			.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			.and().addFilterBefore(
-					new AutenticacaoViaTokenFilter(tokenService), UsernamePasswordAuthenticationFilter.class
+					new AutenticacaoViaTokenFilter(tokenService, usuarioRepository), UsernamePasswordAuthenticationFilter.class
 			); //registrando o filtro antes de autenticar
 	}
 	
