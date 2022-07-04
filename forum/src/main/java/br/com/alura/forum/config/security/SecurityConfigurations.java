@@ -4,15 +4,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @EnableWebSecurity
 @Configuration
@@ -20,6 +20,16 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 	
 	@Autowired
 	private AutenticacaoService autenticacaoService;
+	
+	/*
+	 * Método para realizar a injeção de dependência do 'AuthenticatedAuthorizationManager'
+	 * em AutenticacaoController
+	 * */
+	@Override
+	@Bean
+	protected AuthenticationManager authenticationManager() throws Exception {
+		return super.authenticationManager();
+	}
 	
 	//Configurações de autenticação (login)
 	@Override
@@ -34,8 +44,12 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 		http.authorizeHttpRequests()
 			.antMatchers(HttpMethod.GET, "/topicos").permitAll() //liberando acesso aos endpoints
 			.antMatchers(HttpMethod.GET, "/topicos/*").permitAll()
+			.antMatchers(HttpMethod.POST, "/auth").permitAll()
 			.anyRequest().authenticated() //só libera as demais requisições se estiver autenticado
-			.and().formLogin(); //gera um formulário de login do próprio spring
+			//.and().formLogin(); //gera um formulário de login do próprio spring utiliza a politica de sessão não recomendado para apis rest
+			.and().csrf().disable() //desabilita o token do csrf
+			.sessionManagement() //alterando a politica de sessão para STATELESS para utilização de token
+			.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 	}
 	
 	//configurações de recursos estáticos (js, css, imagens, etc.)
