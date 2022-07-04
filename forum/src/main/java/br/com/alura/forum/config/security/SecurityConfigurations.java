@@ -22,6 +22,9 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private AutenticacaoService autenticacaoService;
 	
+	@Autowired
+	private TokenService tokenService;
+	
 	/*
 	 * Método para realizar a injeção de dependência do 'AuthenticatedAuthorizationManager'
 	 * em AutenticacaoController
@@ -52,7 +55,7 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 			.sessionManagement() //alterando a politica de sessão para STATELESS para utilização de token
 			.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			.and().addFilterBefore(
-					new AutenticacaoViaTokenFilter(), UsernamePasswordAuthenticationFilter.class
+					new AutenticacaoViaTokenFilter(tokenService), UsernamePasswordAuthenticationFilter.class
 			); //registrando o filtro antes de autenticar
 	}
 	
