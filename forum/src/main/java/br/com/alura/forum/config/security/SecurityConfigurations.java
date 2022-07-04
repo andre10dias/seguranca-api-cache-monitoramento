@@ -13,6 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @EnableWebSecurity
 @Configuration
@@ -49,7 +50,10 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 			//.and().formLogin(); //gera um formulário de login do próprio spring utiliza a politica de sessão não recomendado para apis rest
 			.and().csrf().disable() //desabilita o token do csrf
 			.sessionManagement() //alterando a politica de sessão para STATELESS para utilização de token
-			.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+			.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+			.and().addFilterBefore(
+					new AutenticacaoViaTokenFilter(), UsernamePasswordAuthenticationFilter.class
+			); //registrando o filtro antes de autenticar
 	}
 	
 	//configurações de recursos estáticos (js, css, imagens, etc.)
