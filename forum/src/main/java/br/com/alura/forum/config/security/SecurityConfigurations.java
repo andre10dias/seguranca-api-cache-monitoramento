@@ -5,21 +5,22 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import br.com.alura.forum.repository.UsuarioRepository;
 
 @EnableWebSecurity
 @Configuration
-public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
+public class SecurityConfigurations {
 	
 	@Autowired
 	private AutenticacaoService autenticacaoService;
@@ -30,30 +31,34 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private UsuarioRepository usuarioRepository;
 	
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+	
 	/*
 	 * Método para realizar a injeção de dependência do 'AuthenticatedAuthorizationManager'
 	 * em AutenticacaoController
 	 * */
-	@Override
 	@Bean
-	protected AuthenticationManager authenticationManager() throws Exception {
-		return super.authenticationManager();
+	protected AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) 
+			throws Exception {
+		return authenticationConfiguration.getAuthenticationManager();
 	}
 	
 	//Configurações de autenticação (login)
-	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.userDetailsService(autenticacaoService)
-			.passwordEncoder(new BCryptPasswordEncoder());
+		auth.userDetailsService(autenticacaoService).passwordEncoder(passwordEncoder());
 	}
 	
 	//configurações de autorização (urls, perfis de acesso)
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.authorizeHttpRequests()
 			.antMatchers(HttpMethod.GET, "/topicos").permitAll() //liberando acesso aos endpoints
 			.antMatchers(HttpMethod.GET, "/topicos/*").permitAll()
 			.antMatchers(HttpMethod.POST, "/auth").permitAll()
+			.antMatchers(HttpMethod.GET, "/actuator/**").permitAll()
 			.anyRequest().authenticated() //só libera as demais requisições se estiver autenticado
 			//.and().formLogin(); //gera um formulário de login do próprio spring utiliza a politica de sessão não recomendado para apis rest
 			.and().csrf().disable() //desabilita o token do csrf
@@ -62,10 +67,11 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 			.and().addFilterBefore(
 					new AutenticacaoViaTokenFilter(tokenService, usuarioRepository), UsernamePasswordAuthenticationFilter.class
 			); //registrando o filtro antes de autenticar
+		
+		return http.build();
 	}
 	
 	//configurações de recursos estáticos (js, css, imagens, etc.)
-	@Override
 	public void configure(WebSecurity web) throws Exception {
 	}
 	
@@ -73,18 +79,5 @@ public class SecurityConfigurations extends WebSecurityConfigurerAdapter {
 	//public static void main(String[] args) {
 	//	System.out.println(new BCryptPasswordEncoder().encode("123456"));
 	//}
-	
-	//Os métodos acima foram depreciados a partir da versão 5.4 do spring security
-	
-	//@Bean
-    //public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-	//	return http
-	//            .antMatcher("/topicos")
-	//            .antMatcher("/topicos/*")
-	//            .authorizeRequests(authorize -> authorize
-	//                    .anyRequest().authenticated()
-	//            )
-	//            .build();
-    //}
 
 }

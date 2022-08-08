@@ -3,13 +3,6 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-__MACOSX
-*.zip
-*.rar
-
-### Eclipse ###
-.metadata
-.settings
 
 ### STS ###
 .apt_generated
